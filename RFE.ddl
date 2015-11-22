@@ -23,9 +23,8 @@ ALTER TABLE F15F2_Auth ADD CONSTRAINT F15F2_Auth_PK PRIMARY KEY ( auth_id ) ;
 CREATE TABLE F15F2_Comments
   (
     comment_id         INTEGER NOT NULL ,
-    F15F2_RFE_rfe_id   INTEGER ,
-    F15F2_Emp_emp_id   INTEGER ,
-    entered_by_emp_id  INTEGER NOT NULL ,
+    F15F2_RFE_rfe_id   INTEGER NOT NULL,
+    F15F2_Emp_emp_id   INTEGER NOT NULL,
     comment_entry_date DATE NOT NULL ,
     comments           VARCHAR2 (400) NOT NULL
   ) ;
@@ -62,9 +61,7 @@ CREATE TABLE F15F2_Emp
     emp_id             INTEGER NOT NULL ,
     F15F2_Lab_lab_id   INTEGER ,
     type               VARCHAR2 (255) ,
-    active             CHAR (1) ,
     employee_name      VARCHAR2 (30) NOT NULL ,
-    employee_lab       VARCHAR2 (4) NOT NULL ,
     employee_email     VARCHAR2 (100) NOT NULL ,
     employee_office    VARCHAR2 (12) NOT NULL ,
     employee_phone     VARCHAR2 (12) NOT NULL ,
@@ -128,8 +125,6 @@ ALTER TABLE F15F2_Requestor ADD CONSTRAINT F15F2_Requestor_PK PRIMARY KEY ( requ
 CREATE TABLE F15F2_Status
   (
     status_id         INTEGER NOT NULL ,
-    effective_date    DATE NOT NULL ,
-    entered_by_emp_id INTEGER NOT NULL ,
     rfe_status        VARCHAR2 (30) NOT NULL ,
     description       VARCHAR2 (500) NOT NULL
   ) ;

@@ -3,13 +3,14 @@ drop view F15F2_system_admin_view ;
 drop view F15F2_lab_director_view ;
 drop view F15F2_exec_director_view ;
 drop view F15F2_chairperson_view ;
+drop view F15F2_create_rfe_view;
 
 create view F15F2_employee_view as
 SELECT
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -27,9 +28,9 @@ create or replace TRIGGER F15F2_employee_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -41,27 +42,27 @@ BEGIN
     chairperson_flag)
 		 VALUES (
 		:NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id ,
 		'Employee',
 		:NEW.employee_name,
-		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
     :NEW.employee_status,
     :NEW.status_eff_date,
-    :NEW.system_admin_flag,
-    :NEW.lab_director_flag,
-    :NEW.exec_director_flag,
-    :NEW.chairperson_flag) ;
+    'N',
+    'N',
+    'N',
+    'N') ;
 END;
 /
 
 create view F15F2_system_admin_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -79,9 +80,9 @@ create or replace TRIGGER F15F2_system_admin_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -93,9 +94,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'System Admin',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -111,9 +112,9 @@ END;
 create view F15F2_lab_director_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -131,9 +132,9 @@ create or replace TRIGGER F15F2_lab_director_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -145,9 +146,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'Lab Director',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -163,9 +164,9 @@ END;
 create view F15F2_exec_director_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -183,9 +184,9 @@ create or replace TRIGGER F15F2_exec_director_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -197,9 +198,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'Executive Director',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -215,9 +216,9 @@ END;
 create view F15F2_chairperson_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -235,9 +236,9 @@ create or replace TRIGGER F15F2_chairperson_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -249,9 +250,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
- 		'Executive Director',
+    :NEW.F15F2_Lab_lab_id,
+ 		'Chairperson',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -261,5 +262,131 @@ BEGIN
     'N',
     'N',
     'Y') ;
+END;
+/
+
+create view F15F2_create_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_create_rfe_trigger
+     INSTEAD OF insert ON F15F2_create_rfe_view
+     FOR EACH ROW
+DECLARE
+  new_rfe_id INTEGER;
+  requestor_id INTEGER;
+  entered_status INTEGER;
+  current_date DATE;
+  lab_dir INTEGER;
+  sys_admin INTEGER;
+  exec_dir INTEGER;
+  chair INTEGER;
+BEGIN
+    new_rfe_id := F15F2_RFE_seq.nextval;
+    requestor_id := v('P1_EMPLOYEE');
+    entered_status := 100;
+    current_date := SYSDATE();
+    SELECT emp_id INTO lab_dir FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'Lab Director';
+    SELECT emp_id INTO sys_admin FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'System Admin';
+    SELECT emp_id INTO exec_dir FROM F15F2_Emp WHERE Type = 'Executive Director';
+    SELECT emp_id INTO chair FROM F15F2_Emp WHERE Type = 'Chairperson';
+    insert into F15F2_RFE(
+    rfe_id,
+    F15F2_Emp_emp_id,
+    F15F2_Status_status_id,
+    explanation,
+    alt_protections,
+    approval_review_date)
+		VALUES (
+    new_rfe_id,
+    requestor_id,
+ 		entered_status,
+ 		:NEW.explanation,
+    :NEW.alt_protections,
+    :NEW.approval_review_date
+    );
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    new_rfe_id,
+    entered_status,
+    current_date,
+    requestor_id
+    );
+    insert into F15F2_Contacts(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    requestor_id,
+    new_rfe_id,
+    current_date
+    );
+    insert into F15F2_Contacts(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    lab_dir,
+    new_rfe_id,
+    current_date
+    );
+    insert into F15F2_Contacts(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    sys_admin,
+    new_rfe_id,
+    current_date
+    );
+    insert into F15F2_Contacts(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    exec_dir,
+    new_rfe_id,
+    current_date
+    );
+    insert into F15F2_Contacts(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    chair,
+    new_rfe_id,
+    current_date
+    );
+    insert into F15F2_Requestor(
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id,
+    effective_date)
+    VALUES (
+    F15F2_Contacts_Seq.nextval,
+    requestor_id,
+    new_rfe_id,
+    current_date
+    );
 END;
 /
