@@ -1,0 +1,168 @@
+truncate table F15F2_Emp;
+truncate table F15F2_Lab;
+truncate table F15F2_RFE;
+truncate table F15F2_Status;
+truncate table F15F2_Task;
+
+alter trigger F15F2_Emp_PK_trig disable;
+alter trigger F15F2_Lab_PK_trig disable;
+alter trigger F15F2_RFE_PK_trig disable;
+alter trigger F15F2_Status_PK_trig disable;
+alter trigger F15F2_Task_PK_trig disable;
+
+insert into F15F2_Lab(
+  lab_id,
+  lab_code)
+  VALUES(
+    1,
+    'ABC'
+);
+
+insert into F15F2_Lab(
+  lab_id,
+  lab_code)
+  VALUES(
+    2,
+    'ROW'
+);
+
+insert into F15F2_Emp(
+  emp_id,
+  F15F2_Lab_lab_id,
+  type,
+  employee_name,
+  employee_email,
+  employee_office,
+  employee_phone,
+  employee_status,
+  status_eff_date,
+  system_admin_flag,
+  lab_director_flag,
+  exec_director_flag,
+  chairperson_flag)
+VALUES (
+1,
+1,
+'Rice, Amy R.',
+'amy@gmail.com',
+'A123',
+'123-234-2344',
+SYSDATE(),
+'N',
+'N',
+'N',
+'Y'
+);
+
+insert into F15F2_Emp(
+  emp_id,
+  F15F2_Lab_lab_id,
+  type,
+  employee_name,
+  employee_email,
+  employee_office,
+  employee_phone,
+  employee_status,
+  status_eff_date,
+  system_admin_flag,
+  lab_director_flag,
+  exec_director_flag,
+  chairperson_flag)
+VALUES (
+2,
+1,
+'Rice, Joe R.',
+'joe@gmail.com',
+'J123',
+'123-234-2344',
+SYSDATE(),
+'N',
+'N',
+'N',
+'N'
+);
+
+insert into F15F2_Emp(
+  emp_id,
+  F15F2_Lab_lab_id,
+  type,
+  employee_name,
+  employee_email,
+  employee_office,
+  employee_phone,
+  employee_status,
+  status_eff_date,
+  system_admin_flag,
+  lab_director_flag,
+  exec_director_flag,
+  chairperson_flag)
+VALUES (
+3,
+1,
+'Smith, Robert R.',
+'robert@gmail.com',
+'R123',
+'123-234-2344',
+SYSDATE(),
+'N',
+'N',
+'Y',
+'N'
+);
+
+insert into F15F2_Status(
+  status_id,
+  rfe_status,
+  description
+)
+VALUES(
+  1,
+  'Entered',
+  'Entered'
+)
+
+insert into F15F2_Status(
+  status_id,
+  rfe_status,
+  description
+)
+VALUES(
+  2,
+  'Submitted',
+  'Submitted'
+)
+
+insert into F15F2_RFE
+(
+  rfe_id,
+  F15F2_Emp_emp_id,
+  F15F2_Status_status_id,
+  explanation,
+  alt_protections,
+  approval_review_date
+)
+VALUES(
+  1,
+  1,
+  1,
+  'Explanation',
+  'Protections',
+  SYSDATE()
+) ;
+
+insert into F15F2_Task(
+  task_id,
+  task_abbreviation,
+  task_description
+)
+VALUES(
+  1,
+  'RD',
+  'Research development'
+)
+
+alter trigger F15F2_Emp_PK_trig enable;
+alter trigger F15F2_Lab_PK_trig enable;
+alter trigger F15F2_RFE_PK_trig enable;
+alter trigger F15F2_Status_PK_trig enable;
+alter trigger F15F2_Task_PK_trig enable;
