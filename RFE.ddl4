@@ -3,13 +3,20 @@ drop view F15F2_system_admin_view ;
 drop view F15F2_lab_director_view ;
 drop view F15F2_exec_director_view ;
 drop view F15F2_chairperson_view ;
+drop view F15F2_create_rfe_view;
+drop view F15F2_duplicate_rfe_view;
+drop view F15F2_update_rfe_view;
+drop view F15F2_recall_rfe_view;
+drop view F15F2_submit_rfe_view;
+drop view F15F2_return_rfe_view;
+drop view F15F2_reject_rfe_view;
 
 create view F15F2_employee_view as
 SELECT
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -27,9 +34,9 @@ create or replace TRIGGER F15F2_employee_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -41,27 +48,27 @@ BEGIN
     chairperson_flag)
 		 VALUES (
 		:NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id ,
 		'Employee',
 		:NEW.employee_name,
-		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
     :NEW.employee_status,
     :NEW.status_eff_date,
-    :NEW.system_admin_flag,
-    :NEW.lab_director_flag,
-    :NEW.exec_director_flag,
-    :NEW.chairperson_flag) ;
+    'N',
+    'N',
+    'N',
+    'N') ;
 END;
 /
 
 create view F15F2_system_admin_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -79,9 +86,9 @@ create or replace TRIGGER F15F2_system_admin_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -93,9 +100,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'System Admin',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -111,9 +118,9 @@ END;
 create view F15F2_lab_director_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -131,9 +138,9 @@ create or replace TRIGGER F15F2_lab_director_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -145,9 +152,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'Lab Director',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -163,9 +170,9 @@ END;
 create view F15F2_exec_director_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -183,9 +190,9 @@ create or replace TRIGGER F15F2_exec_director_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -197,9 +204,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
+    :NEW.F15F2_Lab_lab_id,
  		'Executive Director',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -215,9 +222,9 @@ END;
 create view F15F2_chairperson_view as
 SELECT
   emp_id,
+  F15F2_Lab_lab_id,
   type,
   employee_name,
-  employee_lab,
   employee_email,
   employee_office,
   employee_phone,
@@ -235,9 +242,9 @@ create or replace TRIGGER F15F2_chairperson_trigger
 BEGIN
     insert into F15F2_Emp(
     emp_id,
+    F15F2_Lab_lab_id,
     type,
     employee_name,
-    employee_lab,
     employee_email,
     employee_office,
     employee_phone,
@@ -249,9 +256,9 @@ BEGIN
     chairperson_flag)
 		VALUES (
     :NEW.emp_id,
- 		'Executive Director',
+    :NEW.F15F2_Lab_lab_id,
+ 		'Chairperson',
  		:NEW.employee_name,
- 		:NEW.employee_lab,
     :NEW.employee_email,
     :NEW.employee_office,
     :NEW.employee_phone,
@@ -261,5 +268,488 @@ BEGIN
     'N',
     'N',
     'Y') ;
+END;
+/
+
+create view F15F2_create_rfe_view as
+SELECT
+    r.rfe_id,
+    r.explanation,
+    r.alt_protections,
+    r.approval_review_date,
+    r.contacts,
+    c.F15F2_RFE_rfe_id,
+    d.file_blob,
+    d.filename,
+    d.file_mimetype,
+    d.file_charset,
+    d.file_comments,
+    d.tags
+FROM F15F2_RFE r
+LEFT OUTER JOIN F15F2_Contacts c ON r.rfe_id = c.F15F2_RFE_rfe_id
+LEFT OUTER JOIN F15F2_Doc d ON r.rfe_id = d.F15F2_RFE_rfe_id;
+
+create or replace TRIGGER F15F2_create_rfe_trigger
+     INSTEAD OF insert ON F15F2_create_rfe_view
+     FOR EACH ROW
+DECLARE
+  new_rfe_id INTEGER;
+  requestor_id INTEGER;
+  entered_status INTEGER;
+  current_date DATE;
+  lab_dir INTEGER;
+  sys_admin INTEGER;
+  exec_dir INTEGER;
+  chair INTEGER;
+  contact_arr    APEX_APPLICATION_GLOBAL.VC_ARR2;
+BEGIN
+    new_rfe_id := F15F2_RFE_seq.nextval;
+    requestor_id := v('P1_EMPLOYEE');
+    entered_status := 100;
+    current_date := SYSDATE();
+    SELECT emp_id INTO lab_dir FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'Lab Director';
+    SELECT emp_id INTO sys_admin FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'System Admin';
+    SELECT emp_id INTO exec_dir FROM F15F2_Emp WHERE Type = 'Executive Director';
+    SELECT emp_id INTO chair FROM F15F2_Emp WHERE Type = 'Chairperson';
+    contact_arr := APEX_UTIL.STRING_TO_TABLE(:NEW.contacts);
+    insert into F15F2_RFE(
+    rfe_id,
+    F15F2_Emp_emp_id,
+    F15F2_Status_status_id,
+    explanation,
+    alt_protections,
+    approval_review_date)
+		VALUES (
+    new_rfe_id,
+    requestor_id,
+ 		entered_status,
+ 		:NEW.explanation,
+    :NEW.alt_protections,
+    :NEW.approval_review_date
+    );
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    new_rfe_id,
+    entered_status,
+    current_date,
+    requestor_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    sys_admin,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    lab_dir,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    exec_dir,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    chair,
+    new_rfe_id
+    );
+    FOR z IN 1..contact_arr.count LOOP
+      insert into F15F2_Contacts(
+      contact_id,
+      F15F2_Emp_emp_id,
+      F15F2_RFE_rfe_id,
+      effective_date)
+      VALUES (
+      F15F2_Contacts_Seq.nextval,
+      contact_arr(z),
+      new_rfe_id,
+      current_date
+      );
+    END LOOP;
+    insert into F15F2_Doc(
+    doc_id,
+    F15F2_RFE_rfe_id,
+    filename,
+    file_mimetype,
+    file_charset,
+    file_blob,
+    file_comments,
+    tags)
+    VALUES (
+    F15F2_Doc_Seq.nextval,
+    new_rfe_id,
+    :NEW.filename,
+    :NEW.file_mimetype,
+    :NEW.file_charset,
+    :NEW.file_blob,
+    :NEW.file_comments,
+    :NEW.tags
+    );
+END;
+/
+
+create view F15F2_duplicate_rfe_view as
+SELECT
+    r.rfe_id,
+    r.explanation,
+    r.alt_protections,
+    r.approval_review_date,
+    r.contacts,
+    c.F15F2_RFE_rfe_id
+FROM F15F2_RFE r
+LEFT OUTER JOIN F15F2_Contacts c ON r.rfe_id = c.F15F2_RFE_rfe_id;
+
+create or replace TRIGGER F15F2_duplicate_rfe_trigger
+     INSTEAD OF insert ON F15F2_duplicate_rfe_view
+     FOR EACH ROW
+DECLARE
+  new_rfe_id INTEGER;
+  requestor_id INTEGER;
+  entered_status INTEGER;
+  current_date DATE;
+  lab_dir INTEGER;
+  sys_admin INTEGER;
+  exec_dir INTEGER;
+  chair INTEGER;
+  contact_arr    APEX_APPLICATION_GLOBAL.VC_ARR2;
+BEGIN
+    new_rfe_id := F15F2_RFE_seq.nextval;
+    requestor_id := v('P1_EMPLOYEE');
+    entered_status := 100;
+    current_date := SYSDATE();
+    SELECT emp_id INTO lab_dir FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'Lab Director';
+    SELECT emp_id INTO sys_admin FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'System Admin';
+    SELECT emp_id INTO exec_dir FROM F15F2_Emp WHERE Type = 'Executive Director';
+    SELECT emp_id INTO chair FROM F15F2_Emp WHERE Type = 'Chairperson';
+    contact_arr := APEX_UTIL.STRING_TO_TABLE(:NEW.contacts);
+    insert into F15F2_RFE(
+    rfe_id,
+    F15F2_Emp_emp_id,
+    F15F2_Status_status_id,
+    explanation,
+    alt_protections,
+    approval_review_date)
+		VALUES (
+    new_rfe_id,
+    requestor_id,
+ 		entered_status,
+ 		:NEW.explanation,
+    :NEW.alt_protections,
+    :NEW.approval_review_date
+    );
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    new_rfe_id,
+    entered_status,
+    current_date,
+    requestor_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    sys_admin,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    lab_dir,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    exec_dir,
+    new_rfe_id
+    );
+    insert into F15F2_Approver(
+    approver_id,
+    F15F2_Emp_emp_id,
+    F15F2_RFE_rfe_id)
+    VALUES (
+    F15F2_Approver_Seq.nextval,
+    chair,
+    new_rfe_id
+    );
+    FOR z IN 1..contact_arr.count LOOP
+      insert into F15F2_Contacts(
+      contact_id,
+      F15F2_Emp_emp_id,
+      F15F2_RFE_rfe_id,
+      effective_date)
+      VALUES (
+      F15F2_Contacts_Seq.nextval,
+      contact_arr(z),
+      new_rfe_id,
+      current_date
+      );
+    END LOOP;
+END;
+/
+
+create view F15F2_update_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_update_rfe_trigger
+     INSTEAD OF insert ON F15F2_update_rfe_view
+     FOR EACH ROW
+BEGIN
+UPDATE F15F2_RFE
+   SET explanation = :NEW.explanation, alt_protections = :NEW.alt_protections, approval_review_date = :NEW.approval_review_date
+   WHERE rfe_id = :NEW.rfe_id;
+END;
+/
+
+create view F15F2_recall_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_recall_rfe_trigger
+     INSTEAD OF insert ON F15F2_recall_rfe_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  recalled_status INTEGER;
+  current_rfe_id INTEGER;
+  requestor_id INTEGER;
+BEGIN
+  current_date := SYSDATE();
+  recalled_status := 103;
+  current_rfe_id := :NEW.rfe_id;
+  requestor_id := v('P1_EMPLOYEE');
+  UPDATE F15F2_RFE
+   SET F15F2_Status_status_id = recalled_status
+   WHERE rfe_id = current_rfe_id;
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    current_rfe_id,
+    recalled_status,
+    current_date,
+    requestor_id
+    );
+    insert into F15F2_Comments(
+    comment_id,
+    F15F2_RFE_rfe_id,
+    F15F2_Emp_emp_id,
+    comment_entry_date,
+    comments)
+    VALUES (
+    F15F2_Comments_Seq.nextval,
+    current_rfe_id,
+    requestor_id,
+    current_date,
+    'RFE Recalled'
+    );
+END;
+/
+
+create view F15F2_submit_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_submit_rfe_trigger
+     INSTEAD OF insert ON F15F2_submit_rfe_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  submitted_status INTEGER;
+  current_rfe_id INTEGER;
+  requestor_id INTEGER;
+  emp_type VARCHAR(255);
+BEGIN
+  current_date := SYSDATE();
+  SELECT type INTO emp_type FROM F15F2_Emp WHERE v('P1_EMPLOYEE') = emp_id;
+  IF (emp_type = 'ARL Employee') THEN
+    submitted_status := 101;
+  ELSIF (emp_type = 'System Admin') THEN
+    submitted_status := 121;
+  ELSIF (emp_type = 'Lab Director') THEN
+    submitted_status := 122;
+  ELSIF (emp_type = 'Chairperson') THEN
+    submitted_status := 123;
+  ELSE
+    submitted_status := 104;
+  END IF;
+  current_rfe_id := :NEW.rfe_id;
+  requestor_id := v('P1_EMPLOYEE');
+  UPDATE F15F2_RFE
+   SET F15F2_Status_status_id = submitted_status
+   WHERE rfe_id = current_rfe_id;
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    current_rfe_id,
+    submitted_status,
+    current_date,
+    requestor_id
+    );
+END;
+/
+
+create view F15F2_return_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_return_rfe_trigger
+     INSTEAD OF insert ON F15F2_return_rfe_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  returned_status INTEGER;
+  current_rfe_id INTEGER;
+  cur_emp_id INTEGER;
+BEGIN
+  current_date := SYSDATE();
+  returned_status := 102;
+  current_rfe_id := :NEW.rfe_id;
+  cur_emp_id := v('P1_EMPLOYEE');
+  UPDATE F15F2_RFE
+   SET F15F2_Status_status_id = returned_status
+   WHERE rfe_id = current_rfe_id;
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    current_rfe_id,
+    returned_status,
+    current_date,
+    cur_emp_id
+    );
+    insert into F15F2_Comments(
+    comment_id,
+    F15F2_RFE_rfe_id,
+    F15F2_Emp_emp_id,
+    comment_entry_date,
+    comments)
+    VALUES (
+    F15F2_Comments_Seq.nextval,
+    current_rfe_id,
+    cur_emp_id,
+    current_date,
+    'RFE Returned'
+    );
+END;
+/
+
+create view F15F2_reject_rfe_view as
+SELECT
+    rfe_id,
+    explanation,
+    alt_protections,
+    approval_review_date
+FROM F15F2_RFE;
+
+create or replace TRIGGER F15F2_reject_rfe_trigger
+     INSTEAD OF insert ON F15F2_reject_rfe_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  rejected_status INTEGER;
+  current_rfe_id INTEGER;
+  cur_emp_id INTEGER;
+BEGIN
+  current_date := SYSDATE();
+  rejected_status := 120;
+  current_rfe_id := :NEW.rfe_id;
+  cur_emp_id := v('P1_EMPLOYEE');
+  UPDATE F15F2_RFE
+   SET F15F2_Status_status_id = rejected_status
+   WHERE rfe_id = current_rfe_id;
+    insert into F15F2_Hist(
+    hist_id,
+    F15F2_RFE_rfe_id,
+    status_id,
+    effective_date,
+    entered_by_emp_id)
+    VALUES (
+    F15F2_Hist_seq.nextval,
+    current_rfe_id,
+    rejected_status,
+    current_date,
+    cur_emp_id
+    );
+    insert into F15F2_Comments(
+    comment_id,
+    F15F2_RFE_rfe_id,
+    F15F2_Emp_emp_id,
+    comment_entry_date,
+    comments)
+    VALUES (
+    F15F2_Comments_Seq.nextval,
+    current_rfe_id,
+    cur_emp_id,
+    current_date,
+    'RFE Rejected'
+    );
 END;
 /
