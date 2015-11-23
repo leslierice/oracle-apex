@@ -27,7 +27,7 @@ prompt APPLICATION 15087 - F15F2 RFE
 -- Application Export:
 --   Application:     15087
 --   Name:            F15F2 RFE
---   Date and Time:   17:15 Monday November 23, 2015
+--   Date and Time:   18:38 Monday November 23, 2015
 --   Exported By:     LESLIERICE@UTEXAS.EDU
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -107,7 +107,7 @@ wwv_flow_api.create_flow(
 ,p_rejoin_existing_sessions=>'N'
 ,p_csv_encoding=>'Y'
 ,p_last_updated_by=>'LESLIERICE@UTEXAS.EDU'
-,p_last_upd_yyyymmddhh24miss=>'20151123171007'
+,p_last_upd_yyyymmddhh24miss=>'20151123183726'
 ,p_file_prefix => nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_ui_type_name => null
 );
@@ -10554,7 +10554,7 @@ wwv_flow_api.create_page(
 ,p_cache_mode=>'NOCACHE'
 ,p_help_text=>'No help is available for this page.'
 ,p_last_updated_by=>'LESLIERICE@UTEXAS.EDU'
-,p_last_upd_yyyymmddhh24miss=>'20151123081721'
+,p_last_upd_yyyymmddhh24miss=>'20151123183458'
 );
 wwv_flow_api.create_page_plug(
  p_id=>wwv_flow_api.id(18127085571600733614)
@@ -10594,9 +10594,6 @@ wwv_flow_api.create_page_button(
 ,p_button_is_hot=>'Y'
 ,p_button_image_alt=>'Create'
 ,p_button_position=>'REGION_TEMPLATE_CREATE'
-,p_button_condition=>'P46_RFE_ID'
-,p_button_condition_type=>'ITEM_IS_NULL'
-,p_grid_new_grid=>false
 ,p_database_action=>'INSERT'
 );
 wwv_flow_api.create_page_branch(
@@ -10880,7 +10877,7 @@ wwv_flow_api.create_page(
 ,p_cache_mode=>'NOCACHE'
 ,p_help_text=>'No help is available for this page.'
 ,p_last_updated_by=>'LESLIERICE@UTEXAS.EDU'
-,p_last_upd_yyyymmddhh24miss=>'20151123170208'
+,p_last_upd_yyyymmddhh24miss=>'20151123183726'
 );
 wwv_flow_api.create_page_plug(
  p_id=>wwv_flow_api.id(18129190002642142100)
@@ -10903,16 +10900,6 @@ wwv_flow_api.create_page_plug(
 ,p_plug_source_type=>'NATIVE_IR'
 ,p_plug_query_row_template=>1
 ,p_plug_query_options=>'DERIVED_REPORT_COLUMNS'
-,p_plug_display_condition_type=>'EXISTS'
-,p_plug_display_when_condition=>wwv_flow_utilities.join(wwv_flow_t_varchar2(
-'SELECT DISTINCT r.rfe_id, e.employee_name, s.rfe_status, r.explanation, r.alt_protections, r.approval_review_date, '''' duplicate_link, '''' view_link',
-'FROM F15F2_RFE r JOIN F15F2_Emp e ON r.F15F2_Emp_emp_id = e.emp_id',
-'JOIN F15F2_Status s ON r.F15F2_Status_status_id = s.status_id',
-'LEFT OUTER JOIN F15F2_Contacts c ON r.rfe_id = c.F15F2_RFE_rfe_id',
-'JOIN F15F2_Approver a ON r.rfe_id = a.F15F2_RFE_rfe_id',
-'WHERE r.F15F2_Emp_emp_id = v(''P1_EMPLOYEE'')',
-'OR c.F15F2_Emp_emp_id = v(''P1_EMPLOYEE'')',
-'OR a.F15F2_Emp_emp_id = v(''P1_EMPLOYEE'');'))
 );
 wwv_flow_api.create_worksheet(
  p_id=>wwv_flow_api.id(18129190180617142100)
@@ -11043,8 +11030,8 @@ wwv_flow_api.create_page_button(
 ,p_button_condition=>wwv_flow_utilities.join(wwv_flow_t_varchar2(
 'SELECT employee_status FROM',
 'F15F2_Emp WHERE',
-'emp_id = :P1_EMPLOYEE',
-'AND employee_status = ''A'''))
+'(emp_id = :P1_EMPLOYEE',
+'AND employee_status = ''A'')'))
 ,p_button_condition_type=>'EXISTS'
 );
 end;
