@@ -10,6 +10,9 @@ drop view F15F2_recall_rfe_view;
 drop view F15F2_submit_rfe_view;
 drop view F15F2_return_rfe_view;
 drop view F15F2_reject_rfe_view;
+drop view F15F2_add_comment_view;
+drop view F15F2_add_task_view;
+drop view F15F2_add_contact_view;
 
 create view F15F2_employee_view as
 SELECT
@@ -416,11 +419,8 @@ SELECT
     r.rfe_id,
     r.explanation,
     r.alt_protections,
-    r.approval_review_date,
-    r.contacts,
-    c.F15F2_RFE_rfe_id
-FROM F15F2_RFE r
-LEFT OUTER JOIN F15F2_Contacts c ON r.rfe_id = c.F15F2_RFE_rfe_id;
+    r.approval_review_date
+FROM F15F2_RFE r;
 
 create or replace TRIGGER F15F2_duplicate_rfe_trigger
      INSTEAD OF insert ON F15F2_duplicate_rfe_view
@@ -434,7 +434,6 @@ DECLARE
   sys_admin INTEGER;
   exec_dir INTEGER;
   chair INTEGER;
-  contact_arr    APEX_APPLICATION_GLOBAL.VC_ARR2;
 BEGIN
     new_rfe_id := F15F2_RFE_seq.nextval;
     requestor_id := v('P1_EMPLOYEE');
@@ -444,7 +443,6 @@ BEGIN
     SELECT emp_id INTO sys_admin FROM F15F2_Emp WHERE v('P1_LAB') = F15F2_Lab_lab_id and Type = 'System Admin';
     SELECT emp_id INTO exec_dir FROM F15F2_Emp WHERE Type = 'Executive Director';
     SELECT emp_id INTO chair FROM F15F2_Emp WHERE Type = 'Chairperson';
-    contact_arr := APEX_UTIL.STRING_TO_TABLE(:NEW.contacts);
     insert into F15F2_RFE(
     rfe_id,
     F15F2_Emp_emp_id,
@@ -509,19 +507,6 @@ BEGIN
     chair,
     new_rfe_id
     );
-    FOR z IN 1..contact_arr.count LOOP
-      insert into F15F2_Contacts(
-      contact_id,
-      F15F2_Emp_emp_id,
-      F15F2_RFE_rfe_id,
-      effective_date)
-      VALUES (
-      F15F2_Contacts_Seq.nextval,
-      contact_arr(z),
-      new_rfe_id,
-      current_date
-      );
-    END LOOP;
 END;
 /
 
@@ -751,5 +736,102 @@ BEGIN
     current_date,
     'RFE Rejected'
     );
+END;
+/
+
+create view F15F2_add_comment_view as
+SELECT
+    c.comment_id,
+    c.comments,
+    c.F15F2_Rfe_rfe_id
+FROM F15F2_Comments c;
+
+create or replace TRIGGER F15F2_add_comment_trigger
+     INSTEAD OF insert ON F15F2_add_comment_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  current_rfe_id INTEGER;
+  cur_emp_id INTEGER;
+BEGIN
+  current_date := SYSDATE();
+  current_rfe_id := :NEW.F15F2_Rfe_rfe_id;
+  cur_emp_id := v('P1_EMPLOYEE');
+  insert into F15F2_Comments(
+  comment_id,
+  F15F2_RFE_rfe_id,
+  F15F2_Emp_emp_id,
+  comment_entry_date,
+  comments)
+  VALUES (
+  F15F2_Comments_Seq.nextval,
+  current_rfe_id,
+  cur_emp_id,
+  current_date,
+  :NEW.comments
+  );
+END;
+/
+
+create view F15F2_add_task_view as
+SELECT
+    t.rfe_tasks_id,
+    t.F15F2_Task_task_id,
+    t.F15F2_Rfe_rfe_id
+FROM F15F2_RFE_Tasks t;
+
+create or replace TRIGGER F15F2_add_task_trigger
+     INSTEAD OF insert ON F15F2_add_task_view
+     FOR EACH ROW
+DECLARE
+  current_rfe_id INTEGER;
+  current_date DATE;
+BEGIN
+  current_rfe_id := :NEW.F15F2_Rfe_rfe_id;
+  current_date := SYSDATE();
+  insert into F15F2_RFE_Tasks(
+  rfe_tasks_id,
+  effective_date,
+  F15F2_RFE_Rfe_id,
+  F15F2_Task_task_id)
+  VALUES (
+  F15F2_Task_Seq.nextval,
+  current_date,
+  current_rfe_id,
+  :NEW.F15F2_Task_task_id
+  );
+END;
+/
+
+create view F15F2_add_contact_view as
+SELECT
+    contact_id,
+    F15F2_Emp_emp_id,
+    F15F2_Rfe_rfe_id,
+    comments
+FROM F15F2_Contacts;
+
+create or replace TRIGGER F15F2_add_contact_trigger
+     INSTEAD OF insert ON F15F2_add_contact_view
+     FOR EACH ROW
+DECLARE
+  current_date DATE;
+  current_rfe_id INTEGER;
+BEGIN
+  current_date := SYSDATE();
+  current_rfe_id := :NEW.F15F2_Rfe_rfe_id;
+  insert into F15F2_Contacts(
+  contact_id,
+  F15F2_Emp_emp_id,
+  F15F2_RFE_rfe_id,
+  effective_date,
+  comments)
+  VALUES (
+  F15F2_Contacts_Seq.nextval,
+  :NEW.F15F2_Emp_emp_id,
+  current_rfe_id,
+  current_date,
+  :NEW.comments
+  );
 END;
 /

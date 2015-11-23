@@ -107,6 +107,7 @@ ALTER TABLE F15F2_RFE ADD CONSTRAINT F15F2_RFE_PK PRIMARY KEY ( rfe_id ) ;
 CREATE TABLE F15F2_RFE_Tasks
   (
     rfe_tasks_id       INTEGER NOT NULL ,
+    effective_date    DATE NOT NULL,
     F15F2_RFE_rfe_id   INTEGER NOT NULL ,
     F15F2_Task_task_id INTEGER NOT NULL
   ) ;
@@ -134,7 +135,6 @@ ALTER TABLE F15F2_Status ADD CONSTRAINT F15F2_Status_PK PRIMARY KEY ( status_id 
 CREATE TABLE F15F2_Task
   (
     task_id           INTEGER NOT NULL ,
-    effective_date    DATE NOT NULL ,
     task_abbreviation VARCHAR2 (15) NOT NULL ,
     task_description  VARCHAR2 (4000) NOT NULL
   ) ;
